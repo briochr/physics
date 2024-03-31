@@ -1,94 +1,138 @@
 // import java.util.Arrays;
 
-class Vector {
-    // Les vecteurs sont en 2D, ils n'ont comme composantes que x et y
+class Point {
     private float x;
     private float y;
     private float norme;
 
-    // Le constructeur du vecteur
-    public Vector(float xCoor, float yCoor) {
+    public Point(float xCoor, float yCoor) {
         this.x = xCoor;
         this.y = yCoor;
-        this.norme = (float) Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
-    // Pour obtenir le x d'un vecteur
+    // Pour obtenir le x d'un point
     public float getX() {
         return this.x;
     }
 
-    // Pour obtenir le y d'un vecteur
+    // Pour obtenir le y d'un point
     public float getY() {
         return this.y;
     }
 
-    // Pour obtenir la norme d'un vecteur
+    // Pour obtenir la norme d'un point
     public float getNorme() {
         return this.norme;
     }
 
-    // Pour modifier la valeur du x d'un vecteur
+    // Pour modifier la valeur du x d'un point
     public void setX(float newX) {
         this.x = newX;
-        this.norme = (float) Math.sqrt(this.x * this.x + this.y * this.y);
+        this.setNorme();
     }
 
-    // Pour modifier la valeur du y d'un vecteur
+    // Pour modifier la valeur du y d'un point
     public void setY(float newY) {
         this.y = newY;
+        this.setNorme();
+    }
+
+    // pour recalculer la norme d'un vecteur après modification des composantes
+    public void setNorme() {
         this.norme = (float) Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+}
+
+class Vector extends Point {
+    private float xStart;
+    private float yStart;
+
+    // Le constructeur du vecteur
+    public Vector(float xCoor, float yCoor) {
+        super(xCoor, yCoor);
+        this.setNorme();
+        xStart = 0;
+        yStart = 0;
+    }
+
+    public Vector(Point p) {
+        super(p.getX(), p.getY());
+        this.setNorme();
+        xStart = 0;
+        yStart = 0;
+    }
+
+    // Pour modifier la valeur du x d'un point
+    public void setX(float newX) {
+        this.xStart = newX;
+        this.setNorme();
+    }
+
+    // Pour modifier la valeur du y d'un point
+    public void setY(float newY) {
+        this.yStart = newY;
+        this.setNorme();
     }
 
     public void add(Vector v) {
-        this.x += v.x;
-        this.y += v.y;
-        this.norme = (float) Math.sqrt(this.x * this.x + this.y * this.y);
+        this.setX(this.getX() + v.getX());
+        this.setX(this.getY() + v.getY());
+        this.setNorme();
     }
 
     public void substract(Vector v) {
-        this.x -= v.x;
-        this.y -= v.y;
-        this.norme = (float) Math.sqrt(this.x * this.x + this.y * this.y);
+        this.setX(this.getX() - v.getX());
+        this.setX(this.getX() - v.getY());
+        this.setNorme();
     }
 
     public void multiply(float k) {
-        this.x *= k;
-        this.y *= k;
-        this.norme *= k;
+        this.setX(this.getX() * k);
+        this.setX(this.getX() * k);
+        this.setNorme();
     }
 
     public void divide(float k) {
-        this.x /= k;
-        this.y /= k;
-        this.norme /= k;
+        this.setX(this.getX() / k);
+        this.setX(this.getX() / k);
+        this.setNorme();
     }
 
     // opération vectorielle
     public float det(Vector u) {
-        return (this.x * u.y) - (this.y * u.x);
+        return (this.getX() * u.getY()) - (this.getY() * u.getX());
     }
 
-    public float scalar(Vector v) {
-        Vector u = new Vector(this.x, this.y);
-        u.substract(v);
-        return (float) (this.norme * this.norme + v.norme * v.norme - u.norme * u.norme);
+    public float scalar(Vector u) {
+        return (float) (this.getX() * u.getX() + this.getY() * v.getY());
     }
 
     // champs vectoriels
     public Vector gravityField(float x, float y) {
-        return (new Vector(9.8f / ((x + 100) * (x + 100)), (9.8f / ((x + 100) * (x + 100)))));
+        return (new Vector(0, (-9.8f / ((x + 100) * (x + 100)))));
+    }
+
+    // affichage des vecteurs
+    public void show(Graphics g) {
+        // on change l'origine
+        Vector transformated = new Vector(0, 0);
+        Vector transformated2 = new Vector(0, 0);
+        Object obj = new Object();
+        transformated = obj.conversion(getX(), getY());
+        transformated2 = obj.conversion(0, 0);
+        g.drawLine(transformated2.getX(), transformated2.getY(), transformated.getX(), transformated.getY());
     }
 }
 
 class Polygon {
-    private Vector[] lPts;
+    private Point[] lPts;
+    private Vector[] vecteursDefinitionTrigo;
 
-    public Polygon(Vector[] listPoints) {
+    public Polygon(Point[] listPoints) {
         this.lPts = listPoints;
     }
 
-    public Vector[] getLPts() {
+    public Point[] getLPts() {
         return this.lPts;
     }
 
@@ -98,23 +142,18 @@ class Polygon {
             int j = (i + 1) % this.lPts.length;
             surface += this.lPts[i].getX() * this.lPts[i].getY() - this.lPts[j].getX() * this.lPts[j].getY();
         }
-        return Math.abs(surface) / 2.0;
+        return (float) (Math.abs(surface) / 2.0);
     }
-    /*
-     * pas opti
-     * 
-     * float surface = 0;
-     * if (this.lPts.length < 3) {
-     * return surface;
-     * } else
-     * for (int i = 1; i < (this.lPts.length + 1); i++) {
-     * Vector u = new Vector(this.lPts[i].getX() - this.lPts[0].getX(),
-     * this.lPts[i].getY() - this.lPts[0].getY());
-     * surface += u.det(new Vector(this.lPts[i + 1].getX() - this.lPts[0].getX(),
-     * this.lPts[i].getY() - this.lPts[0].getY()));
-     * }
-     * return Math.abs(surface / 2f);
-     */
+
+    public Point centre(Vecteur[] vecs) {
+        float sumX = 0;
+        float sumY = 0;
+        for (Vector vec : vecs) {
+            sumX += vec.getX();
+            sumY += vec.getY();
+        }
+        return new Point(sumX / vecs.length, sumY / vecs.length);
+    }
 }
 
 class Object {
@@ -130,6 +169,36 @@ class Object {
         this.velocity = v;
         this.force = f;
         this.mass = m;
+    }
+
+    public void setAcceleration(Vector a) {
+        this.acceleration = a;
+    }
+
+    public Vector calculVecteurAcceleration(Object o) {
+        return (new Vector((float) o.force.getX() / o.mass, (float) o.force.getY() / o.mass));
+    }
+
+    public Vector conversion(Vector data) {
+        Vector ret = new Vector(0, 0);
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Dimension screenSize = toolkit.getScreenSize();
+        int screenX = screenSize.width();
+        int screenY = screenSize.height();
+        ret.setX(data.getX() - screenX / 2);
+        ret.setY(data.getY() - screenY / 2);
+        return ret;
+    }
+
+    public Point conversion(Point data) {
+        Point ret = new Point(0, 0);
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Dimension screenSize = toolkit.getScreenSize();
+        int screenX = screenSize.width();
+        int screenY = screenSize.height();
+        ret.setX(data.getX() - screenX / 2);
+        ret.setY(data.getY() - screenY / 2);
+        return ret;
     }
 }
 
