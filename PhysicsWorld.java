@@ -82,25 +82,39 @@ class Vector {
 }
 
 class Polygon {
-    Vector[] lPts;
+    private Vector[] lPts;
 
     public Polygon(Vector[] listPoints) {
         this.lPts = listPoints;
     }
 
+    public Vector[] getLPts() {
+        return this.lPts;
+    }
+
     public float surface() {
         float surface = 0;
-        if (this.lPts.length < 3) {
-            return surface;
-        } else
-            for (int i = 1; i < (this.lPts.length + 1); i++) {
-                Vector u = new Vector(this.lPts[i].getX() - this.lPts[0].getX(),
-                        this.lPts[i].getY() - this.lPts[0].getY());
-                surface += u.det(new Vector(this.lPts[i + 1].getX() - this.lPts[0].getX(),
-                        this.lPts[i].getY() - this.lPts[0].getY()));
-            }
-        return Math.abs(surface / 2f);
+        for (int i = 0; i < this.lPts.length; i++) {
+            int j = (i + 1) % this.lPts.length;
+            surface += this.lPts[i].getX() * this.lPts[i].getY() - this.lPts[j].getX() * this.lPts[j].getY();
+        }
+        return Math.abs(surface) / 2.0;
     }
+    /*
+     * pas opti
+     * 
+     * float surface = 0;
+     * if (this.lPts.length < 3) {
+     * return surface;
+     * } else
+     * for (int i = 1; i < (this.lPts.length + 1); i++) {
+     * Vector u = new Vector(this.lPts[i].getX() - this.lPts[0].getX(),
+     * this.lPts[i].getY() - this.lPts[0].getY());
+     * surface += u.det(new Vector(this.lPts[i + 1].getX() - this.lPts[0].getX(),
+     * this.lPts[i].getY() - this.lPts[0].getY()));
+     * }
+     * return Math.abs(surface / 2f);
+     */
 }
 
 class Object {

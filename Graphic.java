@@ -1,5 +1,6 @@
 import java.awt.*;
 import java.awt.event.*;
+import PhysicsWorld.*;
 
 public class Graphic extends Frame {
 
@@ -9,7 +10,9 @@ public class Graphic extends Frame {
     }
 
     public Graphic() {
-        windowLayout();
+        // windowLayout();
+        setSize(720, 480);
+        setVisible(true);
     }
 
     // Cette fonction est censée être appelée toute seule
@@ -17,7 +20,7 @@ public class Graphic extends Frame {
     // A L'AIDE ANTOINE
     public void paint(Graphics g) {
         System.out.println("wow");
-        g.setColor(Color.WHITE);
+        g.setColor(Color.BLACK);
 
         Vector pos = new Vector(100, 100);
         Vector move = new Vector(700, 400);
@@ -45,6 +48,13 @@ public class Graphic extends Frame {
         xPoints[2] = (int) (endX - arrowSize * Math.cos(angle + Math.PI / 6));
         yPoints[2] = (int) (endY - arrowSize * Math.sin(angle + Math.PI / 6));
         g.fillPolygon(xPoints, yPoints, 3);
+    }
+
+    public void showPolygon(Graphics g, Polygon poly) {
+        Vector[] vecs = poly.getLPts();
+        for (int i : vecs) {
+            g.drawLine();
+        }
     }
 
     // S'occupe de l'affichage des fenêtres
