@@ -7,21 +7,27 @@ public class Function{
     private String strFunc;
     private FunctionStructure polishFunction;
     private int length;
+    private int slot;
 
     //test & debug
     public static void main(String[] args){
-        Function func = new Function("2^(x*2)+2(x^(2))");
-        System.out.println("bracket : ".concat(func.nextBracket(2).strFunc));
-        func.derivative();
+        Function func = new Function("z");
+        System.out.println("func : "+func.strFunc);
+        func.printDebugFonctionStructure();
+        System.out.println("func : "+func.strFunc);
+        System.out.println("dérivée : "+func.symplifyFunction().derivative().strFunc);
+        func.printDebugFonctionStructure();
     }
 
     public void printDebugFonctionStructure(){
         double[] constants=this.polishFunction.getConstants();
         int[] intFuncNot=this.polishFunction.getIntFuncNot();
+        System.out.print("int : ");
         for (int i : intFuncNot) {
             System.out.print(i + "; ");
         }
         System.out.println("");
+        System.out.print("value : ");
         for (double i : constants) {
             System.out.print(i + "; ");
         }
@@ -34,14 +40,23 @@ public class Function{
         this.polishFunction = this.strToIntNotation();
         this.length = polishFunction.getIntFuncNot().length;
         this.strFunc = this.intToStrNotation();
+        this.slot = 0;
     }
     public Function(FunctionStructure function){
-        this.polishFunction = function.addImplicitMultiplication();
+        this.polishFunction = function.addImplicitMultiplication().removeNull();
         this.strFunc = intToStrNotation();
         this.length = polishFunction.getIntFuncNot().length;
+        this.slot = 0;
     }
     public Function(){
         this.strFunc = "";
+        this.slot = 0;
+    }
+    public Function(Function func){
+        this.strFunc = func.strFunc;
+        this.polishFunction = func.polishFunction;
+        this.length = func.length;
+        this.slot = 0;
     }
 
     //getteurs
@@ -52,6 +67,14 @@ public class Function{
         return this.polishFunction;
     }
 
+    public int getSlot(){
+        return this.slot;
+    }
+
+    public void assignSolt(int i){
+        this.slot=i;
+    }
+
     //convetisseur de fonction en tableau d'entier
     private FunctionStructure strToIntNotation(){
         String funcStr = this.strFunc.toLowerCase();
@@ -60,7 +83,7 @@ public class Function{
 		funcStr = funcStr.replaceAll("exp", "e^");
 		funcStr = funcStr.replaceAll(",", ".");
 
-        Pattern pattern = Pattern.compile("[0-9]*\\.?[0-9]+|\\(|\\)|x|y|y'|\\+|\\*|/|\\^|sqrt|log|abs|sin|sen|cos|tan|tg|-|ln|e|pi");
+        Pattern pattern = Pattern.compile("[0-9]*\\.?[0-9]+|\\(|\\)|x|y|z|\\+|\\*|/|\\^|sqrt|log|abs|sin|sen|cos|tan|tg|-|ln|e|pi");
 	  
 		Matcher m = pattern.matcher(funcStr);
 
@@ -144,79 +167,79 @@ public class Function{
             }
             i++;
         }
-        return (new FunctionStructure(intNotation, constants)).removeNull().addImplicitMultiplication();
+        return (new FunctionStructure(intNotation, constants)).addImplicitMultiplication().removeNull();
     }
 
 //convertisseur tableau d'entier --> string
-private String intToStrNotation(){
-    String returnString = "";
-    double[] constants=this.polishFunction.getConstants();
-    int[] intFuncNot=this.polishFunction.getIntFuncNot();
-    int maxSize = intFuncNot.length;
-    for(int i=0; i<maxSize; i++){
-        switch (intFuncNot[i]) {
-            case FunctionTockenReference.VARX:
-                returnString = returnString.concat("x");
-                break;
-            case FunctionTockenReference.VARY:
-                returnString = returnString.concat("y");
-                break;
-            case FunctionTockenReference.VARZ:
-                returnString = returnString.concat("z");
-                break;
-            case FunctionTockenReference.ADD:
-                returnString = returnString.concat("+");
-                break;
-            case FunctionTockenReference.SUBTRACT:
-                returnString = returnString.concat("-");
-                break;
-            case FunctionTockenReference.MULTIPLY:
-                returnString = returnString.concat("*");
-                break;
-            case FunctionTockenReference.DIVIDE:
-                returnString = returnString.concat("/");
-                break;
-            case FunctionTockenReference.POW:
-                returnString = returnString.concat("^");
-                break;
-            case FunctionTockenReference.SQRT:
-                returnString = returnString.concat("sqrt");
-                break;
-            case FunctionTockenReference.LOG:
-                returnString = returnString.concat("log");
-                break;
-            case FunctionTockenReference.ABS:
-                returnString = returnString.concat("abs");
-                break;
-            case FunctionTockenReference.SIN:
-                returnString = returnString.concat("sin");
-                break;
-            case FunctionTockenReference.COS:
-                returnString = returnString.concat("cos");
-                break;
-            case FunctionTockenReference.TAN:
-                returnString = returnString.concat("tan");
-                break;
-            case FunctionTockenReference.LN:
-                returnString = returnString.concat("ln");
-                break;
-            case FunctionTockenReference.VALUE:
-                returnString = returnString.concat(Double.toString(constants[i]));
-                break;
-            case FunctionTockenReference.LEFT_BRACKET:
-                returnString = returnString.concat("(");
-                break;
-            case FunctionTockenReference.RIGHT_BRACKET:
-                returnString = returnString.concat(")");
-                break;
-            case FunctionTockenReference.SIGMOID:
-                returnString = returnString.concat("sgm");
-                break;
-            case FunctionTockenReference.NULL:
-                returnString = returnString.concat("");
-                break;
+    private String intToStrNotation(){
+        String returnString = "";
+        double[] constants=this.polishFunction.getConstants();
+        int[] intFuncNot=this.polishFunction.getIntFuncNot();
+        int maxSize = intFuncNot.length;
+        for(int i=0; i<maxSize; i++){
+            switch (intFuncNot[i]) {
+                case FunctionTockenReference.VARX:
+                    returnString = returnString.concat("x");
+                    break;
+                case FunctionTockenReference.VARY:
+                    returnString = returnString.concat("y");
+                    break;
+                case FunctionTockenReference.VARZ:
+                    returnString = returnString.concat("z");
+                    break;
+                case FunctionTockenReference.ADD:
+                    returnString = returnString.concat("+");
+                    break;
+                case FunctionTockenReference.SUBTRACT:
+                    returnString = returnString.concat("-");
+                    break;
+                case FunctionTockenReference.MULTIPLY:
+                    returnString = returnString.concat("*");
+                    break;
+                case FunctionTockenReference.DIVIDE:
+                    returnString = returnString.concat("/");
+                    break;
+                case FunctionTockenReference.POW:
+                    returnString = returnString.concat("^");
+                    break;
+                case FunctionTockenReference.SQRT:
+                    returnString = returnString.concat("sqrt");
+                    break;
+                case FunctionTockenReference.LOG:
+                    returnString = returnString.concat("log");
+                    break;
+                case FunctionTockenReference.ABS:
+                    returnString = returnString.concat("abs");
+                    break;
+                case FunctionTockenReference.SIN:
+                    returnString = returnString.concat("sin");
+                    break;
+                case FunctionTockenReference.COS:
+                    returnString = returnString.concat("cos");
+                    break;
+                case FunctionTockenReference.TAN:
+                    returnString = returnString.concat("tan");
+                    break;
+                case FunctionTockenReference.LN:
+                    returnString = returnString.concat("ln");
+                    break;
+                case FunctionTockenReference.VALUE:
+                    returnString = returnString.concat(Double.toString(constants[i]));
+                    break;
+                case FunctionTockenReference.LEFT_BRACKET:
+                    returnString = returnString.concat("(");
+                    break;
+                case FunctionTockenReference.RIGHT_BRACKET:
+                    returnString = returnString.concat(")");
+                    break;
+                case FunctionTockenReference.SIGMOID:
+                    returnString = returnString.concat("sgm");
+                    break;
+                case FunctionTockenReference.NULL:
+                    returnString = returnString.concat("");
+                    break;
             }
-           
+        
         }
         return returnString;
     }
@@ -315,31 +338,40 @@ private String intToStrNotation(){
     }
 
     public Function symplifyFunction(){
+        if (this.length<2) {
+            return new Function();
+        }
+
 
         FunctionStructure func = this.getPolishFunc();
         int[] funcInt = func.getIntFuncNot();
         double[] funcVar = func.getConstants();
         Function returnFunction = new Function(new FunctionStructure(funcInt.length));
-        System.out.println(funcInt[0] == 17);
-        System.out.println(funcInt[funcInt.length - 1] == 18);
 
-        if((funcInt[0]==17)&&(funcInt[funcInt.length-1]==18)){
-            for (int i = 1; i < funcInt.length-1; i++) {
+        Boolean symplifyable = (funcInt[0]==17)&&(funcInt[funcInt.length-1]==18);
 
-                int[] tempInt = {funcInt[i]};
-                double[] tempDouble = {funcVar[i]};
-
-                FunctionStructure temp = new FunctionStructure(tempInt,tempDouble);
-                returnFunction = returnFunction.functionConcat(new Function(temp));
-            }
-            
-            return returnFunction.symplifyFunction();
+        try {
+                for (int i = 1; i < funcInt.length-1; i++) {
+                    if (isInBracket(funcInt, i)&&symplifyable==true) {
+                        symplifyable=true;
+                    }else{
+                        symplifyable=false;
+                    }
+                }
+                if (symplifyable) {
+                    for (int i = 1; i < funcInt.length-1; i++) {
+                        returnFunction=returnFunction.functionConcat(new Function(new FunctionStructure(new int[]{funcInt[i]},new double[]{funcVar[i]})));
+                    }
+                    return returnFunction;
+                }
+                
+        } catch (ArrayIndexOutOfBoundsException e) {
         }
+
             
         return this;
         
     }
-
 
     public boolean isInBracket(int[] funcIntNot, int index){
         int bracket = 0;
@@ -356,32 +388,98 @@ private String intToStrNotation(){
         return (bracket!=0);
     }
 
+    
 
 
 
 
 
     //travaux en cours
+        /*problèmes:
+         * -considère les fonctions de une entitée en fonctions nulles
+         * -veut pas simplifier les fonctions au début mais si on le fait juste avant de dériver ça marche
+         * 
+         */
     private  Function derivative(String var,int iteration){
         iteration++;
 
-        int[] funcInt = this.symplifyFunction().polishFunction.getIntFuncNot();
-        double[] funcVar = this.symplifyFunction().polishFunction.getConstants();
+        Function symplified = this;
+        int[] funcInt = symplified.polishFunction.getIntFuncNot();
+        double[] funcVar = symplified.polishFunction.getConstants();
         Function tempFunction = new Function();
+        Function tempFuncbis = new Function();
         Function finalFunction;
 
-        this.symplifyFunction().printDebugFonctionStructure();
-        try{
-            int i=0;
-            while ((funcInt[i]!=FunctionTockenReference.ADD)||(funcInt[i]!=FunctionTockenReference.ADD&&isInBracket(funcInt, i))) {
-                tempFunction=tempFunction.functionConcat(new Function(new FunctionStructure(new int[]{funcInt[i]}, new double[]{funcVar[i]})));
-                i++;
+        System.out.println("");
+        System.out.println("on dérive : ".concat(symplified.strFunc));
+        symplified.printDebugFonctionStructure();
+        System.out.println("funcInt.length  : "+ funcInt.length);
+        System.out.println("funcVar.length  : "+ funcVar.length);
+        try {
+            
+            //additions
+            try {
+                int index = 0;
+                for (int i = 0; i < funcInt.length; i++) {
+                    if (index==0) {
+                        if ((funcInt[i]!=FunctionTockenReference.ADD)||(isInBracket(funcInt, i))) {
+                            tempFunction=tempFunction.functionConcat(new Function(new FunctionStructure(new int[]{funcInt[i]},new double[]{funcVar[i]})));
+                            System.out.println(iteration +" : " +i + " : ".concat(tempFunction.strFunc));
+                        }else{
+                            System.out.println(iteration +" : "+ i + " : addition");
+                            index = i+1;
+                        }
+                    }else{
+                        tempFuncbis=tempFuncbis.functionConcat(new Function(new FunctionStructure(new int[]{funcInt[i]},new double[]{funcVar[i]})));
+                    }   
+                }
+                System.out.println("index : " + index);
+                if (index==0) {
+                    int error =funcInt[-1];
+                }
+                
+                return tempFunction.derivative(var,iteration).functionConcat("+").functionConcat(tempFuncbis.derivative(var,iteration));
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.out.println(this.strFunc.concat(" n'est pas une addition"));
+            }
+
+            //multiplication
+            try {
+                
+                tempFunction = new Function();
+                tempFuncbis = new Function();
+                
+                int index = 0;
+                for (int i = 0; i < funcInt.length; i++) {
+                    if (index==0) {
+                        if ((funcInt[i]!=FunctionTockenReference.MULTIPLY)||(isInBracket(funcInt, i))) {
+                            tempFunction=tempFunction.functionConcat(new Function(new FunctionStructure(new int[]{funcInt[i]},new double[]{funcVar[i]})));
+                            System.out.println(i + " : ".concat(tempFunction.strFunc));
+                        }else{
+                            System.out.println(i + " : multiplication");
+                            index = i+1;
+                        }
+                    }else{
+                        tempFuncbis=tempFuncbis.functionConcat(new Function(new FunctionStructure(new int[]{funcInt[i]},new double[]{funcVar[i]})));
+                    }   
+                }
+                System.out.println("index : " + index);
+                if (index==0) {
+                    int error =funcInt[-1];
+                }
+                return tempFunction.functionConcat("*").functionConcat(tempFuncbis);
+
+
+
+            } catch (ArrayIndexOutOfBoundsException e) {
+                System.out.println(this.strFunc.concat(" n'est pas une multiplication"));
             }
 
 
         
         }catch(Exception e){
-            System.out.println("problème à :".concat(this.strFunc));
+            System.out.println(iteration + " : problème à : ".concat(this.strFunc));
+            e.printStackTrace();
         }
 
         return new Function("0");

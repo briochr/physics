@@ -5,10 +5,10 @@ import java.io.*;
 
 public class FunctionCompilator{
     public static void main(String[] args){
-        newFile("Test",new Function("x^(2)"));
+        newFile("F1",new Function("2^(2x-5)+5y-z"));
     }
 
-    public static String getTockenString(int i) {
+    private static String getTockenString(int i) {
         switch (i) {
                 
             case FunctionTockenReference.VARX:
@@ -62,17 +62,20 @@ public class FunctionCompilator{
         for(int i=0; i<maxSize; i++){
             try {
                 if (intFuncNot[i+1]==FunctionTockenReference.POW) {
-                returnString+="Math.pow(".concat(getTockenString(intFuncNot[i])).concat(",");
+                    if (intFuncNot[i]==FunctionTockenReference.VALUE) {
+                        returnString+="Math.pow(".concat(Double.toString(constants[i])).concat(",");
+                    }else{
+                        returnString+="Math.pow(".concat(getTockenString(intFuncNot[i])).concat(",");
+                    }
                 i+=3;
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
             }
             
-            String addStr = getTockenString(intFuncNot[i]);
-            if (addStr=="value") {
+            if (intFuncNot[i]==FunctionTockenReference.VALUE) {
             returnString+=Double.toString(constants[i]);
             }else{
-            returnString+=addStr;
+            returnString+=getTockenString(intFuncNot[i]);
             }
         }
         return returnString;
@@ -82,7 +85,7 @@ public class FunctionCompilator{
         try {
 
             // Recevoir le fichier 
-            File f = new File("C:\\Users\\Rispal\\OneDrive\\Bureau\\java\\PhysicsWoldV2\\functions\\functionFile\\".concat(fileName).concat(".java"));
+            File f = new File("C:\\Users\\Rispal\\OneDrive\\Bureau\\java\\PhysicsWoldV2\\functions\\functionfile\\".concat(fileName).concat(".java"));
 
             // Créer un nouveau fichier
             // Vérifier s'il n'existe pas
@@ -94,14 +97,15 @@ public class FunctionCompilator{
         catch (Exception e) {
             System.err.println(e);
         }
-        String textToWrite = "public class ".concat(fileName).concat("{\r\n" + //
-                        "    public static double calcFunc(double x){ \r\n" + //
+        String textToWrite = "package functions.functionfile;\r\n" + //
+                        "public class ".concat(fileName).concat("{\r\n" + //
+                        "    public static double calcFunc(double x, double y, double z){ \r\n" + //
                         "        return " + getFuncCodeString(func) +"; \r\n" + //
                         "    }\r\n" + //
                         "}");
 
         try {
-            PrintWriter writer = new PrintWriter(new FileWriter("C:\\Users\\Rispal\\OneDrive\\Bureau\\java\\PhysicsWoldV2\\functions\\functionFile\\".concat(fileName).concat(".java")));
+            PrintWriter writer = new PrintWriter(new FileWriter("C:\\Users\\Rispal\\OneDrive\\Bureau\\java\\PhysicsWoldV2\\functions\\functionfile\\".concat(fileName).concat(".java")));
             writer.println(textToWrite);
             writer.close();
         } catch (IOException e) {
